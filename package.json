@@ -1,0 +1,21 @@
+{
+  "name": "bike-drop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Bike Drop — a daily bike-share rebalancing puzzle built on real Citi Bike trips.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4"
+  }
+}
