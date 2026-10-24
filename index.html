@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+    <meta name="theme-color" content="#0f1115" />
+    <meta name="description" content="Bike Drop — a daily bike-share rebalancing puzzle. One van, eight stops, real morning trips." />
+    <title>Bike Drop</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚲%3C/text%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <h1>Bike Drop</h1>
+        <div class="sub" id="puzzle-label">loading…</div>
+      </div>
+      <div class="stats">
+        <div class="stat" title="Bikes in the van"><span class="ico">🚐</span><span id="van-load">0</span><span class="dim">/<span id="van-cap">20</span></span></div>
+        <div class="stat" title="Stops left"><span class="ico">📍</span><span id="stops-left">8</span><span class="dim"> left</span></div>
+        <button class="icon-btn" id="help-btn" aria-label="How to play">?</button>
+      </div>
+    </header>
+
+    <main class="map-wrap">
+      <div id="map" role="application" aria-label="Map of stations"></div>
+      <canvas id="replay-canvas" aria-hidden="true"></canvas>
+      <div class="hud hidden" id="hud">
+        <div class="clock" id="hud-clock">6:00</div>
+        <div class="counters">
+          <div class="counter ok"><b id="hud-served">0</b><span>served</span></div>
+          <div class="counter bad"><b id="hud-stranded">0</b><span>stranded</span></div>
+          <div class="counter bad"><b id="hud-full">0</b><span>full dock</span></div>
+        </div>
+      </div>
+      <div class="legend">
+        <span><i class="dot" style="background:#ff5a5a"></i>empty</span>
+        <span><i class="dot" style="background:#3ddc84"></i>half</span>
+        <span><i class="dot" style="background:#5aa9ff"></i>full</span>
+        <span class="hint-key"><b class="drain">▼</b>runs dry</span>
+        <span class="hint-key"><b class="flood">▲</b>fills up</span>
+      </div>
+    </main>
+
+    <section class="panel" id="panel">
+      <!-- planning: default view -->
+      <div class="panel-view" id="view-plan">
+        <div class="plan-row">
+          <div class="plan-list" id="plan-list"><span class="muted">Tap a station to plan your first stop.</span></div>
+          <button class="ghost" id="undo-btn" disabled>Undo</button>
+        </div>
+        <button class="primary" id="run-btn">Run the morning ▶</button>
+      </div>
+
+      <!-- station sheet -->
+      <div class="panel-view hidden" id="view-station">
+        <div class="station-head">
+          <div>
+            <div class="station-name" id="st-name">Station</div>
+            <div class="station-meta" id="st-meta">0 / 0 bikes</div>
+            <div class="station-hint" id="st-hint"></div>
+          </div>
+          <button class="icon-btn" id="st-close" aria-label="Close">✕</button>
+        </div>
+        <div class="gauge"><div class="gauge-fill" id="st-gauge"></div><div class="gauge-delta" id="st-gauge-delta"></div></div>
+        <div class="stepper">
+          <button class="step" id="st-minus" aria-label="Pick up one more bike">−</button>
+          <div class="step-val"><b id="st-delta">0</b><span id="st-delta-label">no change</span></div>
+          <button class="step" id="st-plus" aria-label="Drop off one more bike">+</button>
+        </div>
+        <div class="quick">
+          <button class="ghost" id="st-take-all">Take all</button>
+          <button class="ghost" id="st-reset">Reset</button>
+          <button class="ghost" id="st-drop-all">Drop all</button>
+        </div>
+        <button class="primary" id="st-confirm" disabled>Add stop</button>
+      </div>
+
+      <!-- replay controls -->
+      <div class="panel-view hidden" id="view-replay">
+        <div class="replay-row">
+          <div class="muted" id="replay-status">Replaying the real morning…</div>
+          <button class="ghost" id="skip-btn">Skip ▶▶</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      Bike Drop is an independent, fan-made game, not affiliated with Citi Bike or Lyft.
+      Trip data from <a href="https://citibikenyc.com/system-data" target="_blank" rel="noopener">Citi Bike System Data</a>,
+      used under the <a href="https://ride.citibikenyc.com/data-sharing-policy" target="_blank" rel="noopener">Citi Bike Data Use Policy</a>.
+    </footer>
+
+    <!-- results -->
+    <div class="modal hidden" id="results">
+      <div class="modal-card">
+        <div class="score-wrap">
+          <div class="score-label">Score</div>
+          <div class="score" id="res-score">0</div>
+          <div class="score-sub" id="res-sub"></div>
+        </div>
+        <div class="compare">
+          <div class="cmp you"><b id="res-you">0</b><span>you</span></div>
+          <div class="cmp best"><b id="res-best">0</b><span>best</span></div>
+          <div class="cmp none"><b id="res-none">0</b><span>do nothing</span></div>
+        </div>
+        <div class="muted small" id="res-breakdown"></div>
+        <ol class="grades" id="res-grades"></ol>
+        <details class="best-plan"><summary>See the best plan we found</summary><ol id="res-best-plan"></ol></details>
+        <div class="share-row">
+          <button class="primary" id="share-btn">Share result</button>
+          <button class="ghost" id="replay-again-btn">Watch again</button>
+        </div>
+        <div class="muted small" id="res-streak"></div>
+        <pre class="share-preview" id="share-preview"></pre>
+      </div>
+    </div>
+
+    <!-- how to play -->
+    <div class="modal hidden" id="help">
+      <div class="modal-card">
+        <h2>How to play</h2>
+        <p>It's 11 PM in lower Manhattan and you're the overnight bike-share rebalancing crew. You have <b>one van (20 bikes)</b> and <b>8 stops</b>.</p>
+        <ol class="help-list">
+          <li><b>Tap a station</b>, then pick up or drop off bikes with the stepper. Circles are sized by docks and coloured by how full they are. <b class="drain">▼</b> means it will probably run dry by morning, <b class="flood">▲</b> that it will fill up.</li>
+          <li>Press <b>Run the morning</b>. The <b>real trips from 6–10 AM</b> that day replay on the map, sped up to a minute.</li>
+          <li>A rider who finds <b>no bike</b> is stranded. A rider who finds <b>no free dock</b> is a full-dock miss. Fewer misses = better.</li>
+        </ol>
+        <p>Your plan is scored 0–100 against the best plan our solver found, and each stop is graded 🟩🟨🟧🟥 against the best move available at that moment. One puzzle a day, same for everyone — share your squares.</p>
+        <button class="primary" id="help-close">Let's go</button>
+      </div>
+    </div>
+
+    <div class="toast hidden" id="toast"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
