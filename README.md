@@ -4,6 +4,8 @@ A daily browser puzzle about bike-share rebalancing, built on real Citi Bike tri
 
 It's 11 PM in lower Manhattan and you're the overnight rebalancing crew. You get **one van (20 bikes)** and **8 stops**. At each stop you pick up or drop off bikes. Then the **real trips from 6–10 AM** that morning replay on the map, sped up to a minute. Every rider who finds an empty dock (no bike) or a full dock (nowhere to return) is a miss. Fewer misses = better.
 
+**Play it:** https://bike-drop.pages.dev
+
 Modeled on [2mindrills.com](https://2mindrills.com): one shared puzzle per day, your decisions graded against a computed best, and a Wordle-style result to share.
 
 Bike Drop is an independent, fan-made game, not affiliated with Citi Bike or Lyft. Trip data from [Citi Bike System Data](https://citibikenyc.com/system-data), used under the [Citi Bike Data Use Policy](https://ride.citibikenyc.com/data-sharing-policy).
